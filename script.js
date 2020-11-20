@@ -14,40 +14,84 @@ const btnNew = document.querySelector('.btn--new');
 const btnRoll = document.querySelector('.btn--roll');
 const btnHold = document.querySelector('.btn--hold');
 
-//Starting conditions
-score0El.textContent = 0;
-score1El.textContent = 0;
-diceEl.classList.add('hidden');
+let scores, currentScore, activePlayer, playing;
 
-const scores = [0, 0];
-let currentScore = 0;
-let activePlayer = 0;
+const init = function () {
+  //Starting conditions
+  scores = [0, 0];
+  currentScore = 0;
+  activePlayer = 0;
+  playing = true;
+
+  score0El.textContent = 0;
+  score1El.textContent = 0;
+  current0El.textContent = 0;
+  current1El.textContent = 0;
+  diceEl.classList.add('hidden');
+  player0El.classList.remove('player--winner');
+  player1El.classList.remove('player--winner');
+  player0El.classList.add('player--active');
+  player1El.classList.remove('player--active');
+};
+init();
+//if playing is true ,then all the buttons are activated and we can continue the game & if it is not true then the buttons are disabled and we can not continue the game
+const switchPlayer = function () {
+  //Switch to the next player
+  currentScore = 0;
+  document.getElementById(
+    `current--${activePlayer}`
+  ).textContent = currentScore;
+  activePlayer = activePlayer === 0 ? 1 : 0;
+  //you can use toggle method in classList
+  player0El.classList.toggle('player--active');
+  player1El.classList.toggle('player--active');
+};
 
 //Rolling dice functionality
 btnRoll.addEventListener('click', function () {
-  //1.Generate a random dice rolll
-  const dice = Math.trunc(Math.random() * 6) + 1;
-  console.log(dice);
-  //2.Display dice
-  diceEl.classList.remove('hidden');
-  //you can access html element's attribute like bellow
-  diceEl.src = `dice-${dice}.png`;
-  //3.Check fo rolled 1:if true, switch to next player
-  if (dice !== 1) {
-    //Add dice to the current score
-    currentScore += dice;
-    document.getElementById(
-      `current--${activePlayer}`
-    ).textContent = currentScore;
-  } else {
-    //Switch to the next player
-    currentScore = 0;
-    document.getElementById(
-      `current--${activePlayer}`
-    ).textContent = currentScore;
-    activePlayer = activePlayer === 0 ? 1 : 0;
-    //you can use toggle method in classList
-    player0El.classList.toggle('player--active');
-    player1El.classList.toggle('player--active');
+  if (playing) {
+    //1.Generate a random dice rolll
+    const dice = Math.trunc(Math.random() * 6) + 1;
+    console.log(dice);
+    //2.Display dice
+    diceEl.classList.remove('hidden');
+    //you can access html element's attribute like bellow
+    diceEl.src = `dice-${dice}.png`;
+    //3.Check fo rolled 1:if true, switch to next player
+    if (dice !== 1) {
+      //Add dice to the current score
+      currentScore += dice;
+      document.getElementById(
+        `current--${activePlayer}`
+      ).textContent = currentScore;
+    } else {
+      switchPlayer();
+    }
   }
 });
+
+btnHold.addEventListener('click', function () {
+  if (playing) {
+    //1. Add current score to the active player's score
+    scores[activePlayer] += currentScore;
+    document.querySelector(`#score--${activePlayer}`).textContent =
+      scores[activePlayer];
+    //2.Check if player's score is >=100
+    //Finish the game
+    if (scores[activePlayer] >= 20) {
+      //Finish game
+      playing = false;
+      diceEl.classList.add('hidden');
+      document
+        .querySelector(`.player--${activePlayer}`)
+        .classList.add('player--winner');
+      document
+        .querySelector(`.player--${activePlayer}`)
+        .classList.remove('player--active');
+    } else {
+      switchPlayer();
+    }
+  }
+});
+
+btnNew.addEventListener('click', init);
